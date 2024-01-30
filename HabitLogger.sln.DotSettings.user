@@ -1,34 +1,34 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=62008730_002D75b5_002D473e_002Dbaa9_002Dc10f24d1740f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="DatabaseManagerTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::NUnit3x::HabitLoggerLibraryTests.DatabaseManagerTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7113fb92_002Db3c8_002D4759_002Dbbb7_002Dcf60623d3afe/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="OpenConnection_ShouldOpenConnection" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::NUnit3x::HabitLoggerLibraryTests.DatabaseManagerTests.OpenConnection_ShouldOpenConnection&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.OpenConnection_ShouldOpenConnection&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8259bf85_002D61f2_002D4921_002D876a_002Dce8343b58996/@EntryIndexedValue">&lt;SessionState ContinuousTestingIsOn="True" ContinuousTestingMode="1" Name="DatabaseManagerTests #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.OpenConnection_ShouldOpenConnection&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.CloseConnection_ShouldCloseConnection&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_InsertData_ShouldReturnOne&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteQuery_SelectData_ShouldReturnData&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteScalar_CountRows_ShouldReturnNumberOfRows&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_UpdateData_ShouldAffectOneRow&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_DeleteData_ShouldAffectOneRow&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteTransaction_Rollback_ShouldNotSaveChanges&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_WithInvalidParameters_ShouldReturnError&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.OpenConnection_ShouldOpenConnection&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.CloseConnection_ShouldCloseConnection&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_InsertData_ShouldReturnOne&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteQuery_SelectData_ShouldReturnData&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteScalar_CountRows_ShouldReturnNumberOfRows&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_UpdateData_ShouldAffectOneRow&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_DeleteData_ShouldAffectOneRow&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteTransaction_Rollback_ShouldNotSaveChanges&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::HabitLoggerLibraryTests.DatabaseManagerTests.ExecuteNonQuery_WithInvalidParameters_ShouldReturnError&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=91ffdb1b_002Dd227_002D4731_002D8102_002D88f638a47a95/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="DatabaseManagerTests #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=91ffdb1b_002Dd227_002D4731_002D8102_002D88f638a47a95/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="DatabaseManagerTests #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::net8.0::DatabaseManagerTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::839DD3D3-B932-44B5-B713-E5CF110CFAD3::DatabaseManagerTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e873dc35_002Ddd8f_002D4dfa_002D88e8_002D349673dac749/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="DatabaseManagerTests #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e873dc35_002Ddd8f_002D4dfa_002D88e8_002D349673dac749/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="DatabaseManagerTests #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::0FC25C6F-1089-48C8-B542-0B39F02D6AEC::net8.0::DatabaseManagerTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;net8.0::NUnit3x::0FC25C6F-1089-48C8-B542-0B39F02D6AEC::DatabaseManagerTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
