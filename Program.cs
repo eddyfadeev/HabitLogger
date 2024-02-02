@@ -11,16 +11,14 @@ class Program
         var connectionString = @"Data Source=habit-Tracker.db";
         
         var databaseManager = new DatabaseManager(connectionString);
+        var habitLogger = new Logic.HabitLogger();
         
         databaseManager.CreateDatabase();
         
-        var quantity = Utilities.ValidateNumber("How many steps did you walk today?");
-        var date = Utilities.ValidateDate("What was the date of your walk? (dd-MM-yyyy)");
-
-        MainMenu();
+        MainMenu(habitLogger, databaseManager);
     }
 
-    static void MainMenu()
+    static void MainMenu(Logic.HabitLogger logger,DatabaseManager databaseManager)
     {
         var isRunning = true;
 
@@ -40,7 +38,7 @@ class Program
             switch (userChoice)
             {
                 case "Add Record":
-                    // AddRecord();
+                    logger.AddRecord(databaseManager);
                     break;
                 case "Delete Record":
                     // DeleteRecord();
