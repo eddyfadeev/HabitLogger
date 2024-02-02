@@ -4,11 +4,11 @@ using Spectre.Console;
 
 namespace HabitLogger;
 
-class Program
+static class Program
 {
     static void Main(string[] args)
     {
-        var connectionString = @"Data Source=habit-Tracker.db";
+        var connectionString = "Data Source=habit-Tracker.db";
         
         var databaseManager = new DatabaseManager(connectionString);
         var habitLogger = new Logic.HabitLogger();
@@ -18,7 +18,7 @@ class Program
         MainMenu(habitLogger, databaseManager);
     }
 
-    static void MainMenu(Logic.HabitLogger logger,DatabaseManager databaseManager)
+    static void MainMenu(Logic.HabitLogger logger, DatabaseManager databaseManager)
     {
         var isRunning = true;
 
@@ -38,18 +38,23 @@ class Program
             switch (userChoice)
             {
                 case "Add Record":
+                    Console.Clear();
                     logger.AddRecord(databaseManager);
                     break;
                 case "Delete Record":
-                    // DeleteRecord();
+                    Console.Clear();
+                    logger.DeleteRecord(databaseManager);
                     break;
                 case "View Records":
-                    // ViewRecords();
+                    Console.Clear();
+                    logger.GetRecords(databaseManager);
                     break;
                 case "Update Record":
-                    // UpdateRecord();
+                    Console.Clear();
+                    logger.UpdateRecord(databaseManager);
                     break;
                 case "Quit":
+                    Console.Clear();
                     Console.WriteLine("Goodbye!");
                     isRunning = false;
                     break;

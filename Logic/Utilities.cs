@@ -31,12 +31,14 @@ internal static class Utilities
                 continue;
             }
 
-            if (!isValid)
+            if (isValid)
             {
                 return output;
             }
-
+            
+            
             Console.WriteLine("Invalid input. " + message);
+
         } while(!isValid);
 
         return output;

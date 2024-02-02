@@ -162,7 +162,7 @@ public class DatabaseManager(string connectionString)
     /// Opens a connection to the database using the provided connection string.
     /// </summary>
     /// <returns>A <see cref="SqliteConnection"/> object representing the opened connection.</returns>
-    private SqliteConnection OpenConnection()
+    public SqliteConnection OpenConnection()
     {
         var connection = new SqliteConnection(_connectionString);
         connection.Open();
