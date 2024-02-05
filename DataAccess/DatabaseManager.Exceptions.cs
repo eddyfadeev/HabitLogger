@@ -4,7 +4,7 @@ namespace DataAccess;
 
 public partial class DatabaseManager
 {
-    public static void ErrorMessagePrinter(Exception e)
+    private static void ErrorMessagePrinter(Exception e)
     {
         if (e is SqliteException sqlException)
         {
@@ -36,5 +36,9 @@ public partial class DatabaseManager
                                StackTrace: {e.StackTrace}
                                """);
         }
+        
+        Console.ResetColor();
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadKey();
     }
 }

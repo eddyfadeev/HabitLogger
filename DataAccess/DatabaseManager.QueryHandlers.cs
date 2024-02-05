@@ -1,4 +1,6 @@
-﻿namespace DataAccess;
+﻿using Microsoft.Data.Sqlite;
+
+namespace DataAccess;
 
 public partial class DatabaseManager
 {
@@ -13,15 +15,21 @@ public partial class DatabaseManager
         using var connection = OpenConnection();
         
         using var command = CreateCommand(query, connection, parameters);
+        
 
         try
         {
             return command.ExecuteNonQuery();
         }
+        catch (SqliteException sqlEx)
+        {
+            ErrorMessagePrinter(sqlEx);
+            return -1;
+        }
         catch (Exception e)
         {
             ErrorMessagePrinter(e);
-            throw;
+            return -1;
         }
         finally
         {
@@ -58,10 +66,15 @@ public partial class DatabaseManager
                 results.Add(row);
             }
         }
+        catch (SqliteException sqlEx)
+        {
+            ErrorMessagePrinter(sqlEx);
+            return null;
+        }
         catch (Exception e)
         {
             ErrorMessagePrinter(e);
-            throw;
+            return null;
         }
         finally
         {
@@ -87,10 +100,15 @@ public partial class DatabaseManager
             
             return command.ExecuteScalar();
         }
+        catch (SqliteException sqlEx)
+        {
+            ErrorMessagePrinter(sqlEx);
+            return null;
+        }
         catch (Exception e)
         {
             ErrorMessagePrinter(e);
-            throw;
+            return null;
         }
         finally
         {
