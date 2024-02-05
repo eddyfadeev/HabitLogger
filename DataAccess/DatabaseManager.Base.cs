@@ -40,7 +40,7 @@ public partial class DatabaseManager(string connectionString)
                 CREATE TABLE IF NOT EXISTS habits (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name TEXT,
-                    MeasurementUnit TEXT
+                    Unit TEXT
                 )
                 """;
             tableCommand.ExecuteNonQuery();
@@ -54,6 +54,8 @@ public partial class DatabaseManager(string connectionString)
             CloseConnection(connection);
         }
         
+        #if DEBUG
         SeedData();
+        #endif
     }
 }

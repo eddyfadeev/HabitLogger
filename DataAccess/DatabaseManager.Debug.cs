@@ -21,7 +21,7 @@ public partial class DatabaseManager
         
         for (int i = 0; i < habitNames.Length; i++)
         {
-            var habitQuery = "INSERT INTO habits (Name, MeasurementUnit) VALUES (@name, @unit)";
+            var habitQuery = "INSERT INTO habits (Name, Unit) VALUES (@name, @unit)";
             var habitParameters = new Dictionary<string, object>
             {
                 { "@name", habitNames[i] },
