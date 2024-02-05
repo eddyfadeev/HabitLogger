@@ -12,7 +12,6 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.1" />
-      <PackageReference Include="NLog" Version="5.2.8" />
       <PackageReference Include="Spectre.Console" Version="0.48.0" />
     </ItemGroup>
 
