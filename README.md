@@ -9,7 +9,7 @@ Console-based CRUD application to log habits and track progress and interact wit
 - [x] When the app starts, it should create a new sqlite database file if it does not exist
   - The database should have a table to store habits
   - The database should have a table to store records
-  - These to tables should have a ONE-TO-MANY relationship
+  - These two tables should have a ONE-TO-MANY relationship
 - [x] You should be able to perform CRUD operations on the tables
 - [x] You should handle all possible errors so that the app does not crash 
 - [x] The user should be able to interact with the app using a menu

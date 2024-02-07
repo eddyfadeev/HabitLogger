@@ -32,7 +32,10 @@ internal static class Utilities
 
             try
             {
-                if (numberInput != null) CheckForZero(numberInput);
+                if (numberInput != null)
+                {
+                    CheckForZero(numberInput);
+                }
             } 
             catch (ExitToMainException e)
             {
@@ -68,7 +71,10 @@ internal static class Utilities
 
             try
             {
-                if (dateInput != null) CheckForZero(dateInput);
+                if (dateInput != null)
+                {
+                    CheckForZero(dateInput);
+                }
             } 
             catch (ExitToMainException e)
             {
