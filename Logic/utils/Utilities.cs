@@ -44,7 +44,6 @@ internal static class Utilities
             }
 
             isValid = int.TryParse(numberInput, out output) && output >= 0;
-
             if (!isValid)
             {
                 Console.WriteLine("\nInvalid input. " + message);

@@ -197,7 +197,7 @@ internal class HabitLogger
                 Utilities.ValidateNumber("Enter the quantity of the record (no decimal or negative numbers):");
         } catch (Utilities.ExitToMainException)
         {
-            return;
+            return; 
         }
 
         const string query = "INSERT INTO records (Date, Quantity, HabitId) VALUES (@date, @quantity, @habitId)";
