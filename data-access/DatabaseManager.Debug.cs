@@ -1,8 +1,15 @@
-namespace DataAccess;
+﻿// For testing purposes only
+#if DEBUG
+namespace HabitLogger.data_access;
 
-// For testing purposes only
+/// Class: DatabaseManager
+/// Description: Provides methods to interact with the database.
+/// /
 public partial class DatabaseManager
 {
+    /// <summary>
+    /// Seeds the database with initial data for testing purposes.
+    /// </summary>
     private void SeedData()
     {
         bool recordsTableEmpty = IsTableEmpty("records");
@@ -44,14 +51,26 @@ public partial class DatabaseManager
             ExecuteNonQuery(recordQuery, recordParameters);
         }
     }
-    
+
+    /// <summary>
+    /// Checks if a specified table in the database is empty.
+    /// </summary>
+    /// <param name="tableName">The name of the table to check.</param>
+    /// <returns>True if the table is empty, otherwise false.</returns>
     private bool IsTableEmpty(string tableName)
     {
         var query = $"SELECT COUNT(*) FROM {tableName}";
         var count = ExecuteScalar(query);
-        return (long) count == 0;
+        return (long?) count == 0;
     }
-    
+
+    /// <summary>
+    /// Generates an array of random quantities.
+    /// </summary>
+    /// <param name="count">The number of quantities to generate.</param>
+    /// <param name="min">The minimum value for each quantity.</param>
+    /// <param name="max">The maximum value for each quantity.</param>
+    /// <returns>An array of randomly generated quantities.</returns>
     private int[] GenerateRandomQuantities(int count, int min, int max)
     {
         Random random = new();
@@ -65,28 +84,38 @@ public partial class DatabaseManager
         return quantities;
     }
 
+    /// <summary>
+    /// Generates an array of random dates within a specified range.
+    /// </summary>
+    /// <param name="count">The number of random dates to generate.</param>
+    /// <returns>An array of randomly generated date strings in the format "dd-MM-yyyy".</returns>
     private string[] GenerateRandomDates(int count)
     {
-        DateTime startDate = new DateTime(2023, 7, 1);
-        DateTime endDate = new DateTime(2024, 2, 1);
-        TimeSpan range = endDate - startDate;
+        var startDate = new DateTime(2023, 7, 1);
+        var endDate = new DateTime(2024, 2, 1);
+        var range = endDate - startDate;
         
-        string[] randomDatesStrings = new string[count];
+        var randomDatesStrings = new string[count];
         Random random = new();
 
         for (int i = 0; i < count; i++)
         {
             int daysToAdd = random.Next(0, (int)range.TotalDays);
-            DateTime randomDate = startDate.AddDays(daysToAdd);
+            var randomDate = startDate.AddDays(daysToAdd);
             randomDatesStrings[i] = randomDate.ToString("dd-MM-yyyy");
         }
 
         return randomDatesStrings;
     }
 
+    /// <summary>
+    /// Returns a random habit ID.
+    /// </summary>
+    /// <returns>A random habit ID.</returns>
     private int GetRandomHabitId()
     {
         Random random = new();
         return random.Next(1, 9);
     }
 }
+#endif

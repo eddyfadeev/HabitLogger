@@ -1,24 +1,34 @@
-﻿using DataAccess;
-using Logic;
+﻿using HabitLogger.data_access;
 using Spectre.Console;
 
 namespace HabitLogger;
 
-static class Program
+/// <summary>
+/// The entry point class for the HabitLogger program.
+/// </summary>
+internal static class Program
 {
+    /// <summary>
+    /// The entry point of the application.
+    /// </summary>
+    /// <param name="args">The command-line arguments.</param>
     static void Main(string[] args)
     {
-        var connectionString = "Data Source=habit-Tracker.db";
+        const string connectionString = "Data Source=habit-Tracker.db";
         var databaseManager = new DatabaseManager(connectionString);
         
         databaseManager.CreateDatabase();
         
         MainMenu(databaseManager);
     }
-    
+
+    /// <summary>
+    /// Displays the main menu of the application and handles user input to perform various actions.
+    /// </summary>
+    /// <param name="databaseManager">An instance of the <see cref="DatabaseManager"/> class for interacting with the database.</param>
     static void MainMenu(DatabaseManager databaseManager)
     {
-        var logger = new Logic.HabitLogger();
+        var logger = new logic.HabitLogger();
         var isRunning = true;
 
         while (isRunning)
@@ -27,7 +37,7 @@ static class Program
             
             var userChoice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("What would you like to do?")
+                    .Title("What would you like to do? (0 ot return to main menu)")
                     .AddChoices(
                         "Add Habit",
                         "Delete Habit",

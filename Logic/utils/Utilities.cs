@@ -1,22 +1,24 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
-using DataAccess;
-using Microsoft.Data.Sqlite;
 using Spectre.Console;
 
-namespace Logic;
+namespace HabitLogger.logic.utils;
 
 /// <summary>
-/// The Utilities class provides utility methods for validating user input.
-/// It includes methods for validating numbers and dates.
+/// A collection of utility methods for various functionalities.
 /// </summary>
-public static class Utilities
+internal static class Utilities
 {
     /// <summary>
-    /// Validates a number input received from the user. The number must be greater than 0.
+    /// Represents an exception used to exit to the main menu.
     /// </summary>
-    /// <param name="message">The message to display to the user when asking for the number input. Default value is "Enter a number greater than 0:".</param>
-    /// <returns>The validated number input as an integer.</returns>
+    public sealed class ExitToMainException(string message = "Exiting to main menu.") : Exception(message);
+
+    /// <summary>
+    /// Validates the input as a positive number.
+    /// </summary>
+    /// <param name="message">The message displayed to the user to enter a positive number. Defaults to "Enter a positive number:".</param>
+    /// <returns>The validated positive number.</returns>
     internal static int ValidateNumber(string message = "Enter a positive number:")
     {
         int output;
@@ -26,7 +28,17 @@ public static class Utilities
         {
             Console.WriteLine(message);
             var numberInput = Console.ReadLine();
-            
+
+            try
+            {
+                if (numberInput != null) CheckForZero(numberInput);
+            } 
+            catch (ExitToMainException e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+
             isValid = int.TryParse(numberInput, out output) && output >= 0;
 
             if (!isValid)
@@ -39,11 +51,10 @@ public static class Utilities
         return output;
     }
 
-    /// <summary>
-    /// Validates a date input provided in the format 'dd-MM-yyyy'.
-    /// </summary>
-    /// <param name="message">The prompt message to display to the user.</param>
-    /// <returns>The validated date input.</returns>
+    /// Validates a given date input string in the format "dd-MM-yyyy".
+    /// @param message The message to display when prompting for date input.
+    /// @return The validated date string in the format "dd-MM-yyyy".
+    /// /
     internal static string ValidateDate(string message = "Enter the date (dd-MM-yyyy):")
     {
         DateTime dateValue;
@@ -53,6 +64,16 @@ public static class Utilities
         {
             Console.WriteLine(message);
             var dateInput = Console.ReadLine();
+
+            try
+            {
+                if (dateInput != null) CheckForZero(dateInput);
+            } 
+            catch (ExitToMainException e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
             
             isValid = DateTime.TryParseExact(dateInput, "dd-MM-yyyy", CultureInfo.InvariantCulture,
                 DateTimeStyles.None, out dateValue) && dateValue <= DateTime.Now && dateValue >= DateTime.Now.AddYears(-1);
@@ -68,6 +89,38 @@ public static class Utilities
         return dateValue.ToString("dd-MM-yyyy");
     }
 
+    /// <summary>
+    /// Validates the user input for text fields.
+    /// </summary>
+    /// <param name="str">The name of the text field.</param>
+    /// <returns>The validated user input as a string.</returns>
+    internal static string ValidateTextInput(string str)
+    {
+        try
+        {
+            string input = AnsiConsole.Ask<string>($"Enter the {str}:");
+            
+            while (string.IsNullOrWhiteSpace(input))
+            {
+                input = AnsiConsole.Ask<string>($"Please enter a valid input for the {str}:");
+            }
+            
+            CheckForZero(input);
+            
+            return input;
+        } catch (ExitToMainException e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Builds an update query for a given database table with the specified parameters.
+    /// </summary>
+    /// <param name="databaseName">The name of the database table to update.</param>
+    /// <param name="parameters">A dictionary of parameters to update.</param>
+    /// <returns>The update query string.</returns>
     internal static string UpdateQueryBuilder(string databaseName, Dictionary<string, object> parameters)
     {
         StringBuilder query = new();
@@ -84,5 +137,17 @@ public static class Utilities
         query.Append(" WHERE Id = @id");
         
         return query.ToString();
+    }
+
+    /// <summary>
+    /// Checks if the input string is equal to "0" and throws an ExitToMainException if true.
+    /// </summary>
+    /// <param name="input">The input string to be checked.</param>
+    private static void CheckForZero(string input)
+    {
+        if (input.Equals("0"))
+        {
+            throw new ExitToMainException();
+        }
     }
 }

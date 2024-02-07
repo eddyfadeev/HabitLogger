@@ -1,10 +1,18 @@
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 
-namespace DataAccess;
+namespace HabitLogger.data_access;
 
+/// <summary>
+/// Represents a database manager for handling database operations.
+/// </summary>
 public partial class DatabaseManager
 {
-    private static void ErrorMessagePrinter(Exception e)
+    /// <summary>
+    /// Method to print error messages to the console.
+    /// </summary>
+    /// <param name="e">The exception that occurred.</param>
+    /// <param name="transaction">Optional transaction parameter of type SqliteTransaction.</param>
+    private static void ErrorMessagePrinter(Exception e, SqliteTransaction? transaction = null)
     {
         if (e is SqliteException sqlException)
         {
@@ -36,7 +44,9 @@ public partial class DatabaseManager
                                StackTrace: {e.StackTrace}
                                """);
         }
-        
+
+        transaction?.Rollback();
+
         Console.ResetColor();
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey();
