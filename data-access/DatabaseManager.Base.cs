@@ -1,4 +1,6 @@
-﻿namespace HabitLogger.data_access;
+﻿using HabitLogger.logic.utils;
+
+namespace HabitLogger.data_access;
 
 /// <summary>
 /// Class for managing database operations.
@@ -50,7 +52,7 @@ public partial class DatabaseManager(string connectionString)
         catch (Exception e)
         {
             Console.WriteLine("Failed to create database: ");
-            ErrorMessagePrinter(e);
+            Utilities.ErrorMessagePrinter(e);
         }
         finally
         {

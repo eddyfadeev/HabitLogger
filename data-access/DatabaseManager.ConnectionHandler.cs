@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using HabitLogger.logic.utils;
+using Microsoft.Data.Sqlite;
 
 namespace HabitLogger.data_access;
 
@@ -25,7 +26,10 @@ public partial class DatabaseManager
     /// <param name="connection">The database connection to be closed.</param>
     private void CloseConnection(SqliteConnection? connection)
     {
-        if (connection == null) return;
+        if (connection == null)
+        {
+            return;
+        }
 
         try
         {
@@ -35,7 +39,7 @@ public partial class DatabaseManager
         catch (Exception e)
         {
             Console.WriteLine("Failed to close connection: ");
-            ErrorMessagePrinter(e);
+            Utilities.ErrorMessagePrinter(e);
         }
     }
 }

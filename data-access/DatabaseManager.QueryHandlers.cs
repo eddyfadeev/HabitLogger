@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using HabitLogger.logic.utils;
+using Microsoft.Data.Sqlite;
 
 namespace HabitLogger.data_access;
 
@@ -31,12 +32,12 @@ public partial class DatabaseManager
         }
         catch (SqliteException sqlEx)
         {
-            ErrorMessagePrinter(sqlEx, transaction);
+            Utilities.ErrorMessagePrinter(sqlEx, transaction);
             return -1;
         }
         catch (Exception e)
         {
-            ErrorMessagePrinter(e, transaction);
+            Utilities.ErrorMessagePrinter(e, transaction);
             return -1;
         }
         finally
@@ -83,12 +84,12 @@ public partial class DatabaseManager
         }
         catch (SqliteException sqlEx)
         {
-            ErrorMessagePrinter(sqlEx);
+            Utilities.ErrorMessagePrinter(sqlEx);
             return null;
         }
         catch (Exception e)
         {
-            ErrorMessagePrinter(e);
+            Utilities.ErrorMessagePrinter(e);
             return null;
         }
         finally
@@ -119,12 +120,12 @@ public partial class DatabaseManager
         }
         catch (SqliteException sqlEx)
         {
-            ErrorMessagePrinter(sqlEx);
+            Utilities.ErrorMessagePrinter(sqlEx);
             return null;
         }
         catch (Exception e)
         {
-            ErrorMessagePrinter(e);
+            Utilities.ErrorMessagePrinter(e);
             return null;
         }
         finally
