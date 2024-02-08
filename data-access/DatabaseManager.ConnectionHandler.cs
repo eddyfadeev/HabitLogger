@@ -25,7 +25,10 @@ public partial class DatabaseManager
     /// <param name="connection">The database connection to be closed.</param>
     private void CloseConnection(SqliteConnection? connection)
     {
-        if (connection == null) return;
+        if (connection == null)
+        {
+            return;
+        }
 
         try
         {

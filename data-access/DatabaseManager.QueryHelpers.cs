@@ -14,7 +14,10 @@ public partial class DatabaseManager
     /// <param name="parameters">A dictionary of parameters where the key is the parameter name and the value is the parameter value.</param>
     private void AddParameters(SqliteCommand command, Dictionary<string, object>? parameters)
     {
-        if (parameters == null) return;
+        if (parameters == null)
+        {
+            return;
+        }
         foreach (var parameter in parameters)
         {
             command.Parameters.AddWithValue(parameter.Key, parameter.Value);

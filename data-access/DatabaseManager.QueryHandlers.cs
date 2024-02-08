@@ -15,11 +15,46 @@ public partial class DatabaseManager
     /// <returns>
     /// The number of rows affected by the command. Returns -1 if an error occurs.
     /// </returns>
-    public int ExecuteNonQuery(string query, Dictionary<string, object>? parameters = null)
+    public int ExecuteNonQuery(string query, Dictionary<string, object> parameters)
     {
         using var connection = OpenConnection();
         using var transaction = connection.BeginTransaction();
         using var command = CreateCommand(query, connection, parameters);
+        command.Transaction = transaction;
+
+        try
+        {
+            int affectedRows = command.ExecuteNonQuery();
+            transaction.Commit();
+            
+            return affectedRows;
+        }
+        catch (SqliteException sqlEx)
+        {
+            ErrorMessagePrinter(sqlEx, transaction);
+            return -1;
+        }
+        catch (Exception e)
+        {
+            ErrorMessagePrinter(e, transaction);
+            return -1;
+        }
+        finally
+        {
+            CloseConnection(connection);
+        }
+    }
+
+    /// <summary>
+    /// Executes a non-query SQL statement on the database.
+    /// </summary>
+    /// <param name="query">The SQL statement to execute.</param>
+    /// <returns>The number of rows affected by the execution of the SQL statement.</returns>
+    public int ExecuteNonQuery(string query)
+    {
+        using var connection = OpenConnection();
+        using var transaction = connection.BeginTransaction();
+        using var command = CreateCommand(query, connection, null);
         command.Transaction = transaction;
 
         try
@@ -58,14 +93,60 @@ public partial class DatabaseManager
     /// If no parameters are required, the parameters argument can be null.
     /// If an exception occurs during the query execution, the method prints an error message and returns null.
     /// </remarks>
-    public List<Dictionary<string, object>>? ExecuteQuery(string query, Dictionary<string, object>? parameters = null)
+    public List<Dictionary<string, object>>? ExecuteQuery(string query, Dictionary<string, object> parameters)
+    {
+        var results = new List<Dictionary<string, object>>();
+        using var connection = OpenConnection();
+
+        try
+        {
+            using var command = CreateCommand(query, connection, parameters);
+
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                var row = new Dictionary<string, object>();
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    row[reader.GetName(i)] = (reader.IsDBNull(i) ? null : reader.GetValue(i)) ?? "NIL";
+                }
+
+                results.Add(row);
+            }
+        }
+        catch (SqliteException sqlEx)
+        {
+            ErrorMessagePrinter(sqlEx);
+            return null;
+        }
+        catch (Exception e)
+        {
+            ErrorMessagePrinter(e);
+            return null;
+        }
+        finally
+        {
+            CloseConnection(connection);
+        }
+        
+        return results;
+    }
+
+    /// <summary>
+    /// Executes the specified SQL query and returns a list of dictionaries representing the result set.
+    /// </summary>
+    /// <param name="query">The SQL query to execute.</param>
+    /// <returns>A list of dictionaries representing the result set.</returns>
+    public List<Dictionary<string, object>>? ExecuteQuery(string query)
     {
         var results = new List<Dictionary<string, object>>();
         using var connection = OpenConnection();
         
         try
         {
-            using var command = CreateCommand(query, connection, parameters);
+            using var command = CreateCommand(query, connection, null);
 
             using var reader = command.ExecuteReader();
 
@@ -107,13 +188,47 @@ public partial class DatabaseManager
     /// <returns>
     /// The first column of the first row in the result set, or null if the result set is empty.
     /// </returns>
-    public object? ExecuteScalar(string query, Dictionary<string, object>? parameters = null)
+    public object? ExecuteScalar(string query, Dictionary<string, object> parameters)
+    {
+        using var connection = OpenConnection();
+
+        try
+        {
+            using var command = CreateCommand(query, connection, parameters);
+
+            return command.ExecuteScalar();
+        }
+        catch (SqliteException sqlEx)
+        {
+            ErrorMessagePrinter(sqlEx);
+            return null;
+        }
+        catch (Exception e)
+        {
+            ErrorMessagePrinter(e);
+            return null;
+        }
+        finally
+        {
+            CloseConnection(connection);
+        }
+    }
+
+    /// <summary>
+    /// Executes a SQL query and returns the first column of the first row in the result set as an <see cref="object"/>.
+    /// </summary>
+    /// <param name="query">The SQL query to execute.</param>
+    /// <returns>
+    /// The first column of the first row in the result set as an <see cref="object"/>, or null if the query execution fails.
+    /// </returns>
+
+    public object? ExecuteScalar(string query)
     {
         using var connection = OpenConnection();
         
         try
         {
-            using var command = CreateCommand(query, connection, parameters);
+            using var command = CreateCommand(query, connection, null);
             
             return command.ExecuteScalar();
         }
