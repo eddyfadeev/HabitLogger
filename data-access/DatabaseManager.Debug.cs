@@ -102,7 +102,7 @@ public partial class DatabaseManager
         {
             int daysToAdd = random.Next(0, (int)range.TotalDays);
             var randomDate = startDate.AddDays(daysToAdd);
-            randomDatesStrings[i] = randomDate.ToString("dd-MM-yyyy");
+            randomDatesStrings[i] = randomDate.ToString("yyyy-MM-dd");
         }
 
         return randomDatesStrings;

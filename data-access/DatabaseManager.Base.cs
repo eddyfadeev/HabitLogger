@@ -29,7 +29,7 @@ public partial class DatabaseManager(string connectionString)
                 """
                 CREATE TABLE IF NOT EXISTS records (
                                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    Date TEXT,
+                                    Date DATE,
                                     Quantity INTEGER,
                                     HabitId INTEGER,
                                     FOREIGN KEY (HabitId) REFERENCES habits(Id) ON DELETE CASCADE

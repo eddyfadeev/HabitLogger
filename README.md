@@ -16,7 +16,7 @@ Console-based CRUD application to log habits and track progress and interact wit
 - [x] The user should be able to return to the main menu by typing in 0 (zero), where they can choose 
       to exit the app or perform other operations
 - [x] You can interact with the database using only raw SQL queries
-- [ ] The user should be able to generate a report of their habits and records and store in a separate file
+- [x] The user should be able to generate a report of their habits and records !WIP: and store in a separate file
 
 ## References:
 - [SQLite](https://www.sqlite.org/index.html)

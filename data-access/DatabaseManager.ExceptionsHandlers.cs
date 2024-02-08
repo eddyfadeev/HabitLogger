@@ -25,6 +25,16 @@ public partial class DatabaseManager
                                """);
             Console.ResetColor();
         } 
+        else if (e is KeyNotFoundException) 
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("Key not found error occured.");
+            Console.WriteLine($"""
+                               Message: {e.Message},
+                               StackTrace: {e.StackTrace}
+                               """);
+            Console.ResetColor();
+        }
         else if (e is Exception)
         {
             Console.ForegroundColor = ConsoleColor.Red;

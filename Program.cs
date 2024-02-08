@@ -1,5 +1,6 @@
 ﻿using HabitLogger.data_access;
-using Spectre.Console;
+using HabitLogger.logic.utils;
+using HabitLogger.menu;
 
 namespace HabitLogger;
 
@@ -23,9 +24,9 @@ internal static class Program
     }
 
     /// <summary>
-    /// Displays the main menu of the application and handles user input to perform various actions.
+    /// Represents the main menu of the HabitLogger program.
     /// </summary>
-    /// <param name="databaseManager">An instance of the <see cref="DatabaseManager"/> class for interacting with the database.</param>
+    /// <param name="databaseManager">The <see cref="DatabaseManager"/> object for interacting with the database.</param>
     static void MainMenu(DatabaseManager databaseManager)
     {
         var logger = new logic.HabitLogger();
@@ -33,56 +34,15 @@ internal static class Program
 
         while (isRunning)
         {
-            Console.Clear();
-            
-            var userChoice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("What would you like to do? (0 ot return to main menu)")
-                    .AddChoices(
-                        "Add Habit",
-                        "Delete Habit",
-                        "Update Habit",
-                        "Add Record",
-                        "Delete Record",
-                        "View Records",
-                        "Update Record",
-                        "Quit")
-            );
-            
-            switch (userChoice)
+            try
             {
-                case "Add Habit":
-                    logger.AddHabit(databaseManager);
-                    break;
-                case "Delete Habit":
-                    logger.DeleteHabit(databaseManager);
-                    break;
-                case "Update Habit":
-                    logger.UpdateHabit(databaseManager);
-                    break;
-                case "Add Record":
-                    logger.AddRecord(databaseManager);
-                    break;
-                case "Delete Record":
-                    logger.DeleteRecord(databaseManager);
-                    break;
-                case "View Records":
-                    logger.GetRecords(databaseManager);
-                    break;
-                case "Update Record":
-                    logger.UpdateRecord(databaseManager);
-                    break;
-                case "Quit":
-                    Console.WriteLine("Goodbye!");
-                    isRunning = false;
-                    break;
-                default:    
-                    Console.WriteLine("Invalid choice. Please select one of the above.");
-                    break;
+                Menus.MainMenu(databaseManager, logger);
             }
-            
-            Console.WriteLine("\nPress any key to continue...");
-            Console.ReadKey();
+            catch (Utilities.ExitFromAppException e)
+            {
+                Console.WriteLine(e.Message + ". \nGoodbye!");
+                isRunning = false;
+            }
         }
     }
 }

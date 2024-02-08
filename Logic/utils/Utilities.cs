@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using HabitLogger.menu;
 using Spectre.Console;
 
 namespace HabitLogger.logic.utils;
@@ -13,13 +14,13 @@ internal static class Utilities
     /// Represents an exception used to exit to the main menu.
     /// </summary>
     public sealed class ExitToMainException(string message = "Exiting to main menu.") : Exception(message);
-
+    public sealed class ExitFromAppException(string message = "Exiting the application.") : Exception(message);
     /// <summary>
     /// Validates the input as a positive number.
     /// </summary>
     /// <param name="message">The message displayed to the user to enter a positive number. Defaults to "Enter a positive number:".</param>
     /// <returns>The validated positive number.</returns>
-    internal static int ValidateNumber(string message = "Enter a positive number:")
+    internal static int ValidateNumber(string message = "Enter a positive number:", int maximum = int.MaxValue, int minumum = 0)
     {
         int output;
         bool isValid;
@@ -39,11 +40,11 @@ internal static class Utilities
                 throw;
             }
 
-            isValid = int.TryParse(numberInput, out output) && output >= 0;
+            isValid = int.TryParse(numberInput, out output) && output >= minumum && output <= maximum;
 
             if (!isValid)
             {
-                Console.WriteLine("\nInvalid input. " + message);
+                Console.WriteLine("\nInvalid input. ");
             }
             
         } while(!isValid);
@@ -55,7 +56,7 @@ internal static class Utilities
     /// @param message The message to display when prompting for date input.
     /// @return The validated date string in the format "dd-MM-yyyy".
     /// /
-    internal static string ValidateDate(string message = "Enter the date (dd-MM-yyyy):")
+    internal static string ValidateDate(string message = "Enter the date (yyyy-MM-dd):")
     {
         DateTime dateValue;
         bool isValid;
@@ -75,7 +76,7 @@ internal static class Utilities
                 throw;
             }
             
-            isValid = DateTime.TryParseExact(dateInput, "dd-MM-yyyy", CultureInfo.InvariantCulture,
+            isValid = DateTime.TryParseExact(dateInput, "yyyy-MM-dd", CultureInfo.InvariantCulture,
                 DateTimeStyles.None, out dateValue) && dateValue <= DateTime.Now && dateValue >= DateTime.Now.AddYears(-1);
 
 
@@ -86,7 +87,7 @@ internal static class Utilities
             }
         } while (!isValid);
 
-        return dateValue.ToString("dd-MM-yyyy");
+        return dateValue.ToString("yyyy-MM-dd");
     }
 
     /// <summary>
@@ -137,6 +138,71 @@ internal static class Utilities
         query.Append(" WHERE Id = @id");
         
         return query.ToString();
+    }
+    
+    internal static (string query, Dictionary<string, object> parameters) 
+        ReportQueryBuilder(HabitLogger.ReportInputData reportData)
+    {
+        StringBuilder query = new();
+        Dictionary<string, object> parameters = new();
+        
+        query.Append($"SELECT * FROM records WHERE");
+
+        switch (reportData.ReportType)
+        {
+            case ReportType.DateToToday:
+            case ReportType.DateToDate:
+                query.Append($" Date");
+                query.Append(reportData.ReportType == ReportType.DateToToday ? $" >= @date AND" : $" BETWEEN @startDate AND @endDate AND");
+                break;   
+            case ReportType.TotalForMonth:
+                query.Append($" strftime('%m', Date) = @month AND strftime('%Y', Date) = @year AND");
+                break;
+            case ReportType.YearToDate:
+            case ReportType.TotalForYear:
+                query.Append(" strftime('%Y', Date) = @year");
+                query.Append(reportData.ReportType == ReportType.YearToDate ? " AND Date <= @date AND" : " AND");
+                break;
+            case ReportType.Total:
+                break;
+            default:
+                Console.WriteLine("Problem with query builder occured (query section).");
+                break;
+        }
+
+        switch (reportData.ReportType)
+        {
+            case ReportType.DateToToday:
+                parameters.Add("@date", reportData.Date!);
+                break;
+            case ReportType.DateToDate:
+                parameters.Add("@startDate", reportData.StartDate!);
+                parameters.Add("@endDate", reportData.EndDate!);
+                break;
+            case ReportType.TotalForMonth:
+                parameters.Add("@month", (reportData.Month ?? -1).ToString("00"));
+                parameters.Add("@year", (reportData.Year ?? DateTime.Now.Year).ToString()); 
+                break;
+            case ReportType.YearToDate:
+                parameters.Add("@year", reportData.Year.ToString()!);
+                parameters.Add("@date", reportData.Date!);
+                break;
+            case ReportType.TotalForYear:
+                parameters.Add("@year", (reportData.Year ?? DateTime.Now.Year).ToString());
+                break;
+            case ReportType.Total:
+                break;
+            default:
+                Console.WriteLine("Problem with query builder occured (Parameters section).");
+                break; 
+        }
+        
+        parameters.Add("@id", reportData.Id);
+        
+        query.Append(" HabitId = @id  ORDER BY Date ASC");
+        
+        
+        return (query.ToString(), parameters);
     }
 
     /// <summary>

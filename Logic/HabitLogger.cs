@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using HabitLogger.data_access;
 using HabitLogger.logic.utils;
+using HabitLogger.menu;
 using Spectre.Console;
 
 namespace HabitLogger.logic;
@@ -13,12 +14,17 @@ internal class HabitLogger
     /// <summary>
     /// Class representing a record with habit.
     /// </summary>
-    private sealed record RecordWithHabit(int Id, DateTime Date, int Quantity, string HabitName, string Unit);
+    private sealed record RecordWithHabit(int? Id, DateTime Date, int Quantity, string? HabitName, string? Unit);
 
     /// <summary>
     /// Represents a class for managing habits in the Habit Logger application.
     /// </summary>
     private sealed record Habit(int Id, string Name, string Unit);
+    
+    internal sealed record ReportInputData(
+        ReportType ReportType, int Id,
+        string? Date = null, string? StartDate = null, string? EndDate = null, int? Month = null, int? Year = null
+        );
 
     /// <summary>
     /// Adds a habit to the database.
@@ -135,7 +141,7 @@ internal class HabitLogger
     /// Retrieves a list of habits from the database.
     /// </summary>
     /// <param name="database">The <see cref="DatabaseManager"/> instance.</param>
-    private void GetHabits(DatabaseManager database)
+    internal void GetHabits(DatabaseManager database)
     {
         List<Habit> habits = new();
         const string query = "SELECT * FROM Habits";
@@ -186,7 +192,7 @@ internal class HabitLogger
         string date;
         
         try {
-            date = Utilities.ValidateDate("Enter the date of the record (dd-MM-yyyy):");
+            date = Utilities.ValidateDate("Enter the date of the record (yyyy-MM-dd):");
         
             GetHabits(database);
 
@@ -260,7 +266,7 @@ internal class HabitLogger
             if (updateDate)
             {
                 var date = Utilities.ValidateDate(
-                    "\nEnter the date of the record (dd-MM-yyyy): or insert 0 to go back to main menu:"
+                    "\nEnter the date of the record (yyyy-MM-dd): or insert 0 to go back to main menu:"
                 );
                 parameters.Add("@date", date);
             }
@@ -307,18 +313,9 @@ internal class HabitLogger
         var result = database.ExecuteQuery(query);
 
         if (result != null)
-            foreach (var row in result)
-            {
-                records.Add(
-                    new RecordWithHabit(
-                        Convert.ToInt32(row["Id"]),
-                        DateTime.ParseExact((string)row["Date"], "dd-MM-yyyy", new CultureInfo("en-CA")),
-                        Convert.ToInt32(row["Quantity"]),
-                        (string)row["HabitName"],
-                        (string)row["Unit"]
-                    )
-                );
-            }
+        {
+            records = CreateRecordWithHabitList(result);
+        }
 
         ViewRecords(records);
     }
@@ -339,13 +336,148 @@ internal class HabitLogger
         {
             
             table.AddRow(
-                record.Id.ToString(), 
+                record.Id.ToString() ?? "No ID", 
                 record.Date.Date.ToString("D"), 
                 $"{record.Quantity} {record.Unit}",
-                record.HabitName
+                record.HabitName ?? "No Habit Name"
                 );
         }
 
         AnsiConsole.Write(table);
+    }
+
+    internal void GenerateHabitReport(DatabaseManager database, ReportType reportType, int id)
+    {
+        var parameters = new Dictionary<string, object>();
+        ReportInputData reportInputData;
+        string date;
+        string startDate;
+        string endDate;
+        var (habitName, measurementUnit) = GetSupportInfo(database, id);
+        int month;
+        int year;
+        var query = "";
+
+        try
+        {
+            switch (reportType)
+            {
+                case ReportType.DateToToday:
+                    date = Utilities.ValidateDate("Enter the start date (yyyy-MM-dd):");
+                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: date);
+
+                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
+                    break;
+                case ReportType.DateToDate:
+                    startDate = Utilities.ValidateDate("Enter the start date (yyyy-MM-dd):");
+                    endDate = Utilities.ValidateDate("Enter the end date (yyyy-MM-dd):");
+                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, StartDate: startDate,
+                        EndDate: endDate);
+
+                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
+                    break;
+                case ReportType.TotalForMonth:
+                    month = Utilities.ValidateNumber("Enter the month (1-12):", maximum: 12);
+                    year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                        maximum: DateTime.Now.Year);
+                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Month: month, Year: year);
+
+                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
+                    break;
+                case ReportType.YearToDate:
+                    year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                        maximum: DateTime.Now.Year);
+                    endDate = Utilities.ValidateDate("Enter the end date (yyyy-MM-dd):");
+                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: endDate, Year: year);
+
+                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
+                    break;
+                case ReportType.TotalForYear:
+                    year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                        maximum: DateTime.Now.Year);
+                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Year: year);
+
+                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
+                    break;
+                case ReportType.Total:
+                    reportInputData = new ReportInputData(ReportType: reportType, Id: id);
+
+                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
+                    break;
+                default:
+                    Console.WriteLine("No records found.");
+                    break;
+            }
+        } catch (Utilities.ExitToMainException)
+        {
+            return;
+        }
+
+        var result = database.ExecuteQuery(query, parameters);
+        
+        if (result != null)
+        {
+            var records = CreateRecordWithHabitList(result);
+
+            ViewHabitReport(records, habitName, measurementUnit);
+        }
+        else
+        {
+            Console.WriteLine("No records found.");
+        }
+    }
+    
+    private void ViewHabitReport(List<RecordWithHabit> records, string habitName, string measurementUnit)
+    {
+        Console.Clear();
+        var table = new Table();
+        table.Title($"Habit Report for {habitName} activity");
+        table.AddColumn("Date");
+        table.AddColumn($"{measurementUnit}");
+
+        foreach (var record in records)
+        {
+            table.AddRow(record.Date.Date.ToString("D"), $"{record.Quantity}");
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    private (string habitName, string mesurementUnits) GetSupportInfo(DatabaseManager database, int id)
+    {
+        const string query = "SELECT Name, Unit FROM habits WHERE Id = @id";
+        
+        var parameters = new Dictionary<string, object>
+        {
+            { "@id", id }
+        };
+        
+        var result = database.ExecuteQuery(query, parameters);
+        
+        return (result![0]["Name"].ToString(), result[0]["Unit"].ToString())!;
+    }
+    
+    private List<RecordWithHabit> CreateRecordWithHabitList(List<Dictionary<string, object>> result)
+    {
+        var records = new List<RecordWithHabit>();
+        
+        foreach (var row in result)
+        {
+            int? id = row.TryGetValue("Id", out var value) ? Convert.ToInt32(value) : null;
+            var habitName = row.TryGetValue("HabitName", out value) ? (string)row["HabitName"] : null;
+            var unit = row.TryGetValue("Unit", out value) ? (string)row["Unit"] : null;
+            
+            records.Add(
+                new RecordWithHabit(
+                    id,
+                    DateTime.ParseExact((string)row["Date"], "yyyy-MM-dd", new CultureInfo("en-CA")),
+                    Convert.ToInt32(row["Quantity"]),
+                    habitName,
+                    unit
+                )
+            );
+        }
+
+        return records;
     }
 }
