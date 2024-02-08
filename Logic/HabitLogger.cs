@@ -3,6 +3,7 @@ using HabitLogger.data_access;
 using HabitLogger.logic.utils;
 using HabitLogger.menu;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace HabitLogger.logic;
 
@@ -433,15 +434,24 @@ internal class HabitLogger
     {
         Console.Clear();
         var table = new Table();
+        var totals = new List<IRenderable>
+        {
+            new Markup($"[bold]Total entries: {records.Count}[/]"),
+            new Markup($"[bold]Total: {records.Sum(r => r.Quantity)} {measurementUnit}[/]")
+        };
         table.Title($"Habit Report for {habitName} activity");
         table.AddColumn("Date");
         table.AddColumn($"{measurementUnit}");
+        table.Width(60);
 
         foreach (var record in records)
         {
             table.AddRow(record.Date.Date.ToString("D"), $"{record.Quantity}");
         }
 
+        table.AddRow(new Rule(), new Rule());
+        table.AddRow(totals);
+        
         AnsiConsole.Write(table);
     }
 
@@ -481,5 +491,14 @@ internal class HabitLogger
         }
 
         return records;
+    }
+
+    // TODO: Implement this method
+    private void SaveReportToFile()
+    {
+        var textWriter = new StringWriter();
+        AnsiConsoleOutput tableOutput = new AnsiConsoleOutput(textWriter);
+        
+        textWriter.WriteLine(Console.Out);
     }
 }
