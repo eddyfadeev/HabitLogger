@@ -93,7 +93,7 @@ public partial class DatabaseManager
     /// If no parameters are required, the parameters argument can be null.
     /// If an exception occurs during the query execution, the method prints an error message and returns null.
     /// </remarks>
-    public List<Dictionary<string, object>>? ExecuteQuery(string query, Dictionary<string, object>? parameters)
+    public List<Dictionary<string, object>>? ExecuteQuery(string query, Dictionary<string, object> parameters)
     {
         var results = new List<Dictionary<string, object>>();
         using var connection = OpenConnection();
@@ -188,7 +188,7 @@ public partial class DatabaseManager
     /// <returns>
     /// The first column of the first row in the result set, or null if the result set is empty.
     /// </returns>
-    public object? ExecuteScalar(string query, Dictionary<string, object>? parameters)
+    public object? ExecuteScalar(string query, Dictionary<string, object> parameters)
     {
         using var connection = OpenConnection();
 
