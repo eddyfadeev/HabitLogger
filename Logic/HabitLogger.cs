@@ -148,6 +148,7 @@ internal class HabitLogger
         var result = database.ExecuteQuery(query);
 
         if (result != null)
+        {
             foreach (var row in result)
             {
                 habits.Add(
@@ -158,6 +159,7 @@ internal class HabitLogger
                     )
                 );
             }
+        }
 
         ViewHabits(habits);
     }
