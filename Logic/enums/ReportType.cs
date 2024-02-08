@@ -1,4 +1,4 @@
-﻿namespace HabitLogger.menu;
+﻿namespace HabitLogger.logic.enums;
 
 public enum ReportType
 {

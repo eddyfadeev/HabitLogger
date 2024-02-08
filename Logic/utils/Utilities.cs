@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
-using HabitLogger.menu;
+using HabitLogger.logic.enums;
 using Spectre.Console;
 
 namespace HabitLogger.logic.utils;
@@ -10,21 +10,40 @@ namespace HabitLogger.logic.utils;
 /// </summary>
 internal static class Utilities
 {
+    #region Inner Classes and Records
     /// <summary>
     /// Represents an exception used to exit to the main menu.
     /// </summary>
     public sealed class ExitToMainException(string message = "Exiting to main menu.") : Exception(message);
+
+    /// <summary>
+    /// Represents an exception that is thrown when the application should exit.
+    /// </summary>
     public sealed class ExitFromAppException(string message = "Exiting the application.") : Exception(message);
+
+    /// <summary>
+    /// The ReportInputData class represents the input data for generating a report.
+    /// </summary>
+    internal sealed record ReportInputData(
+        ReportType ReportType, int Id,
+        string? Date = null, string? StartDate = null, string? EndDate = null, int? Month = null, int? Year = null
+    );
+    #endregion
+
+    #region Methods
     /// <summary>
     /// Validates the input as a positive number.
     /// </summary>
     /// <param name="message">The message displayed to the user to enter a positive number. Defaults to "Enter a positive number:".</param>
+    /// <param name="maximum">The maximum allowed value for the number. Defaults to int.MaxValue.</param>
+    /// <param name="minimum">The minimum allowed value for the number. Defaults to 0.</param>
     /// <returns>The validated positive number.</returns>
-    internal static int ValidateNumber(string message = "Enter a positive number:", int maximum = int.MaxValue, int minumum = 0)
+    internal static int ValidateNumber(string message = "Enter a positive number:", int maximum = int.MaxValue,
+        int minumum = 0)
     {
         int output;
         bool isValid;
-        
+
         do
         {
             Console.WriteLine(message);
@@ -55,10 +74,11 @@ internal static class Utilities
         return output;
     }
 
+    /// <summary>
     /// Validates a given date input string in the format "dd-MM-yyyy".
-    /// @param message The message to display when prompting for date input.
-    /// @return The validated date string in the format "dd-MM-yyyy".
-    /// /
+    /// </summary>
+    /// <param name="message">The message to display when prompting for date input.</param>
+    /// <returns>The validated date string in the format "dd-MM-yyyy".</returns>
     internal static string ValidateDate(string message = "Enter the date (yyyy-MM-dd):")
     {
         DateTime dateValue;
@@ -106,7 +126,7 @@ internal static class Utilities
         try
         {
             string input = AnsiConsole.Ask<string>($"Enter the {str}:");
-            
+
             while (string.IsNullOrWhiteSpace(input))
             {
                 input = AnsiConsole.Ask<string>($"Please enter a valid input for the {str}:");
@@ -132,7 +152,7 @@ internal static class Utilities
     {
         StringBuilder query = new();
         List<string> keysList = new List<string>(parameters.Keys).Except(new List<string> { "@id", "@Id" }).ToList();
-        
+
         query.Append($"UPDATE {databaseName} SET");
 
         foreach (var key in keysList)
@@ -145,12 +165,19 @@ internal static class Utilities
         
         return query.ToString();
     }
-    
-    internal static (string query, Dictionary<string, object> parameters) 
-        ReportQueryBuilder(HabitLogger.ReportInputData reportData)
+
+    /// <summary>
+    /// Builds a SQL query for generating different types of reports based on provided input data.
+    /// </summary>
+    /// <param name="reportData">
+    /// An object containing the input data for generating the report.
+    /// </param>
+    /// <returns>
+    /// A string representing the SQL query for generating the report.
+    /// </returns>
+    private static string ReportQueryBuilder(ReportInputData reportData)
     {
         StringBuilder query = new();
-        Dictionary<string, object> parameters = new();
         
         query.Append($"SELECT * FROM records WHERE");
 
@@ -175,7 +202,21 @@ internal static class Utilities
                 Console.WriteLine("Problem with query builder occured (query section).");
                 break;
         }
+        
+        query.Append(" HabitId = @id  ORDER BY Date ASC");
+        
+        return query.ToString();
+    }
 
+    /// <summary>
+    /// Builds the query parameters for generating a report based on the given input data.
+    /// </summary>
+    /// <param name="reportData">The input data for generating the report.</param>
+    /// <returns>A dictionary containing the query parameters for generating the report.</returns>
+    private static Dictionary<string, object> ReportQueryParametersBuilder(ReportInputData reportData)
+    {
+        Dictionary<string, object> parameters = new();
+        
         switch (reportData.ReportType)
         {
             case ReportType.DateToToday:
@@ -204,11 +245,89 @@ internal static class Utilities
         }
         
         parameters.Add("@id", reportData.Id);
-        
-        query.Append(" HabitId = @id  ORDER BY Date ASC");
-        
-        
-        return (query.ToString(), parameters);
+
+        return parameters;
+    }
+
+    /// <summary>
+    /// Creates a report query based on the specified report type and ID.
+    /// </summary>
+    /// <param name="reportType">The type of report to create.</param>
+    /// <param name="id">The ID of the report.</param>
+    /// <returns>
+    /// A tuple containing the generated query string and parameter dictionary.
+    /// </returns>
+    internal static (string? query, Dictionary<string, object>? parameters)
+        CreateReportQuery(ReportType reportType, int id)
+    {
+        ReportInputData reportInputData;
+        var query = "";
+        var parameters = new Dictionary<string, object>();
+        string date;
+        string startDate;
+        string endDate;
+        int month;
+        int year;
+            
+        switch (reportType)
+        {
+            case ReportType.DateToToday:
+                date = ValidateDate("Enter the start date (yyyy-MM-dd):");
+                reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: date);
+
+                query = ReportQueryBuilder(reportInputData);
+                parameters = ReportQueryParametersBuilder(reportInputData);
+                break;
+            case ReportType.DateToDate:
+                startDate = ValidateDate("Enter the start date (yyyy-MM-dd):");
+                endDate = ValidateDate("Enter the end date (yyyy-MM-dd):");
+                reportInputData = new ReportInputData(ReportType: reportType, Id: id, StartDate: startDate,
+                    EndDate: endDate);
+
+                query = ReportQueryBuilder(reportInputData);
+                parameters = ReportQueryParametersBuilder(reportInputData);
+                break;
+            case ReportType.TotalForMonth:
+                month = ValidateNumber("Enter the month (1-12):", maximum: 12);
+                year = ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                    maximum: DateTime.Now.Year);
+                reportInputData = new ReportInputData(ReportType: reportType, Id: id, Month: month, Year: year);
+
+                query = ReportQueryBuilder(reportInputData);
+                parameters = ReportQueryParametersBuilder(reportInputData);
+                break;
+            case ReportType.YearToDate:
+                year = ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                    maximum: DateTime.Now.Year);
+                endDate = ValidateDate("Enter the end date (yyyy-MM-dd):");
+                reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: endDate, Year: year);
+
+                query = ReportQueryBuilder(reportInputData);
+                parameters = ReportQueryParametersBuilder(reportInputData);
+                break;
+            case ReportType.TotalForYear:
+                year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                    maximum: DateTime.Now.Year);
+                reportInputData = new ReportInputData(ReportType: reportType, Id: id, Year: year);
+
+                query = ReportQueryBuilder(reportInputData);
+                parameters = ReportQueryParametersBuilder(reportInputData);
+                break;
+            case ReportType.Total:
+                reportInputData = new ReportInputData(ReportType: reportType, Id: id);
+
+                query = ReportQueryBuilder(reportInputData);
+                parameters = ReportQueryParametersBuilder(reportInputData);
+                break;
+            default:
+                Console.WriteLine("No records found.");
+                query = null;
+                parameters = null;
+                
+                break;
+        }
+
+        return (query, parameters);
     }
 
     /// <summary>
@@ -222,4 +341,32 @@ internal static class Utilities
             throw new ExitToMainException();
         }
     }
+
+    /// <summary>
+    /// Saves the content of a table to a CSV file.
+    /// </summary>
+    /// <param name="table">The table holding the content to be saved.</param>
+    internal static void SaveReportToFile(Table table)
+    {
+        var reportName = table.Title?.Text;
+        table.Title("");
+        
+        var textWriter = new StringWriter();
+        
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(textWriter),
+        });
+        
+        console.Write(table);
+        console.WriteLine($"{reportName}\n");
+        console.WriteLine($"Generated on {DateTime.Now:f}");
+        
+        File.WriteAllText($"report-{DateTime.Now.Date:yyyy-MM-dd}.csv", textWriter.ToString());
+
+        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings());
+        
+        AnsiConsole.WriteLine("Save complete.");
+    }
+    #endregion
 }
