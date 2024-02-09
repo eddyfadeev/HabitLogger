@@ -1,11 +1,20 @@
 ﻿using HabitLogger.data_access;
 using HabitLogger.logic.utils;
+using HabitLogger.logic.enums;
 using Spectre.Console;
 
-namespace HabitLogger.menu;
+namespace HabitLogger.view;
 
-public static class Menus
+/// <summary>
+/// Represents a view for the main menu of the HabitLogger application.
+/// </summary>
+public static class MenuView
 {
+    /// <summary>
+    /// Displays the main menu options and handles user input to perform corresponding actions.
+    /// </summary>
+    /// <param name="databaseManager">The instance of the DatabaseManager class.</param>
+    /// <param name="logger">The instance of the HabitLogger class.</param>
     internal static void MainMenu(DatabaseManager databaseManager, logic.HabitLogger logger)
     {
         Console.Clear();
@@ -62,6 +71,11 @@ public static class Menus
         Console.ReadKey();
     }
 
+    /// <summary>
+    /// Displays a menu for generating different types of reports based on user input.
+    /// </summary>
+    /// <param name="databaseManager">An instance of the DatabaseManager class.</param>
+    /// <param name="logger">An instance of the HabitLogger class.</param>
     private static void ReportsMenu(DatabaseManager databaseManager, logic.HabitLogger logger)
     {
         int id;
@@ -118,7 +132,13 @@ public static class Menus
                 break;
         }
     }
-    
+
+    /// <summary>
+    /// Asks the user for the ID of a habit by displaying a prompt and validating the input.
+    /// </summary>
+    /// <param name="databaseManager">The DatabaseManager instance for interacting with the database.</param>
+    /// <param name="logger">The HabitLogger instance for retrieving habits.</param>
+    /// <returns>The ID of the habit entered by the user.</returns>
     private static int AskForHabitId(DatabaseManager databaseManager, logic.HabitLogger logger)
     {
         logger.GetHabits(databaseManager);

@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
 using HabitLogger.data_access;
 using HabitLogger.logic.utils;
-using HabitLogger.menu;
+using HabitLogger.logic.enums;
+using HabitLogger.view;
 using Spectre.Console;
-using Spectre.Console.Rendering;
 
 namespace HabitLogger.logic;
 
@@ -13,19 +13,14 @@ namespace HabitLogger.logic;
 internal class HabitLogger
 {
     /// <summary>
-    /// Class representing a record with habit.
+    /// Record representing a record with habit.
     /// </summary>
-    private sealed record RecordWithHabit(int? Id, DateTime Date, int Quantity, string? HabitName, string? Unit);
+    internal sealed record RecordWithHabit(int? Id, DateTime Date, int Quantity, string? HabitName, string? Unit);
 
     /// <summary>
-    /// Represents a class for managing habits in the Habit Logger application.
+    /// Represents a record for managing habits in the Habit Logger application.
     /// </summary>
-    private sealed record Habit(int Id, string Name, string Unit);
-    
-    internal sealed record ReportInputData(
-        ReportType ReportType, int Id,
-        string? Date = null, string? StartDate = null, string? EndDate = null, int? Month = null, int? Year = null
-        );
+    internal sealed record Habit(int Id, string Name, string Unit);
 
     /// <summary>
     /// Adds a habit to the database.
@@ -162,26 +157,7 @@ internal class HabitLogger
             }
         }
 
-        ViewHabits(habits);
-    }
-
-    /// <summary>
-    /// Displays a table of habits.
-    /// </summary>
-    /// <param name="habits">A list of Habit objects representing the habits to be displayed.</param>
-    private void ViewHabits(List<Habit> habits)
-    {
-        var table = new Table();
-        table.AddColumn("Id");
-        table.AddColumn("Name");
-        table.AddColumn("Measurement Unit");
-
-        foreach (var habit in habits)
-        {
-            table.AddRow(habit.Id.ToString(), habit.Name, habit.Unit);
-        }
-
-        AnsiConsole.Write(table);
+        ContentView.ViewHabits(habits);
     }
 
     /// <summary>
@@ -320,98 +296,20 @@ internal class HabitLogger
             records = CreateRecordWithHabitList(result);
         }
 
-        ViewRecords(records);
-    }
-
-    /// <summary>
-    /// Retrieves the records from the database and displays them in a table format.
-    /// </summary>
-    /// <param name="records">A list of RecordWithHabit objects containing the records to be displayed.</param>
-    private void ViewRecords(List<RecordWithHabit> records)
-    {
-        var table = new Table();
-        table.AddColumn("Id");
-        table.AddColumn("Date");
-        table.AddColumn("Amount");
-        table.AddColumn("Habit");
-
-        foreach (var record in records)
-        {
-            
-            table.AddRow(
-                record.Id.ToString() ?? "No ID", 
-                record.Date.Date.ToString("D"), 
-                $"{record.Quantity} {record.Unit}",
-                record.HabitName ?? "No Habit Name"
-                );
-        }
-
-        AnsiConsole.Write(table);
+        ContentView.ViewRecords(records);
     }
 
     internal void GenerateHabitReport(DatabaseManager database, ReportType reportType, int id)
     {
         var parameters = new Dictionary<string, object>();
-        ReportInputData reportInputData;
-        string date;
-        string startDate;
-        string endDate;
         var (habitName, measurementUnit) = GetSupportInfo(database, id);
-        int month;
-        int year;
         var query = "";
 
         try
         {
-            switch (reportType)
-            {
-                case ReportType.DateToToday:
-                    date = Utilities.ValidateDate("Enter the start date (yyyy-MM-dd):");
-                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: date);
-
-                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
-                    break;
-                case ReportType.DateToDate:
-                    startDate = Utilities.ValidateDate("Enter the start date (yyyy-MM-dd):");
-                    endDate = Utilities.ValidateDate("Enter the end date (yyyy-MM-dd):");
-                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, StartDate: startDate,
-                        EndDate: endDate);
-
-                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
-                    break;
-                case ReportType.TotalForMonth:
-                    month = Utilities.ValidateNumber("Enter the month (1-12):", maximum: 12);
-                    year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
-                        maximum: DateTime.Now.Year);
-                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Month: month, Year: year);
-
-                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
-                    break;
-                case ReportType.YearToDate:
-                    year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
-                        maximum: DateTime.Now.Year);
-                    endDate = Utilities.ValidateDate("Enter the end date (yyyy-MM-dd):");
-                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: endDate, Year: year);
-
-                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
-                    break;
-                case ReportType.TotalForYear:
-                    year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
-                        maximum: DateTime.Now.Year);
-                    reportInputData = new ReportInputData(ReportType: reportType, Id: id, Year: year);
-
-                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
-                    break;
-                case ReportType.Total:
-                    reportInputData = new ReportInputData(ReportType: reportType, Id: id);
-
-                    (query, parameters) = Utilities.ReportQueryBuilder(reportInputData);
-                    break;
-                default:
-                    Console.WriteLine("No records found.");
-                    break;
-            }
-        } catch (Utilities.ExitToMainException)
+            (query, parameters) = Utilities.CreateReportQuery(reportType, id);
+        } 
+        catch (Utilities.ExitToMainException)
         {
             return;
         }
@@ -422,37 +320,12 @@ internal class HabitLogger
         {
             var records = CreateRecordWithHabitList(result);
 
-            ViewHabitReport(records, habitName, measurementUnit);
+            ContentView.ViewHabitReport(records, habitName, measurementUnit);
         }
         else
         {
             Console.WriteLine("No records found.");
         }
-    }
-    
-    private void ViewHabitReport(List<RecordWithHabit> records, string habitName, string measurementUnit)
-    {
-        Console.Clear();
-        var table = new Table();
-        var totals = new List<IRenderable>
-        {
-            new Markup($"[bold]Total entries: {records.Count}[/]"),
-            new Markup($"[bold]Total: {records.Sum(r => r.Quantity)} {measurementUnit}[/]")
-        };
-        table.Title($"Habit Report for {habitName} activity");
-        table.AddColumn("Date");
-        table.AddColumn($"{measurementUnit}");
-        table.Width(60);
-
-        foreach (var record in records)
-        {
-            table.AddRow(record.Date.Date.ToString("D"), $"{record.Quantity}");
-        }
-
-        table.AddRow(new Rule(), new Rule());
-        table.AddRow(totals);
-        
-        AnsiConsole.Write(table);
     }
 
     private (string habitName, string mesurementUnits) GetSupportInfo(DatabaseManager database, int id)
@@ -491,14 +364,5 @@ internal class HabitLogger
         }
 
         return records;
-    }
-
-    // TODO: Implement this method
-    private void SaveReportToFile()
-    {
-        var textWriter = new StringWriter();
-        AnsiConsoleOutput tableOutput = new AnsiConsoleOutput(textWriter);
-        
-        textWriter.WriteLine(Console.Out);
     }
 }

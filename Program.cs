@@ -1,6 +1,6 @@
 ﻿using HabitLogger.data_access;
 using HabitLogger.logic.utils;
-using HabitLogger.menu;
+using HabitLogger.view;
 
 namespace HabitLogger;
 
@@ -36,11 +36,11 @@ internal static class Program
         {
             try
             {
-                Menus.MainMenu(databaseManager, logger);
+                MenuView.MainMenu(databaseManager, logger);
             }
             catch (Utilities.ExitFromAppException e)
             {
-                Console.WriteLine(e.Message + ". \nGoodbye!");
+                Console.WriteLine(e.Message + " \nGoodbye!");
                 isRunning = false;
             }
         }
