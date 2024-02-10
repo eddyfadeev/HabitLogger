@@ -1,4 +1,5 @@
 using HabitLogger.logic.utils;
+using HabitLogger.data_and_access;
 using Spectre.Console;
 
 namespace HabitLogger.view;
@@ -12,7 +13,7 @@ public static class ContentView
     /// Displays a table of habits.
     /// </summary>
     /// <param name="habits">A list of Habit objects representing the habits to be displayed.</param>
-    internal static void ViewHabits(List<logic.HabitLogger.Habit> habits)
+    internal static void ViewHabits(List<Habit> habits)
     {
         var table = new Table();
         table.AddColumn("Id");
@@ -31,7 +32,7 @@ public static class ContentView
     /// Retrieves the records from the database and displays them in a table format.
     /// </summary>
     /// <param name="records">A list of RecordWithHabit objects containing the records to be displayed.</param>
-    internal static void ViewRecords(List<logic.HabitLogger.RecordWithHabit> records)
+    internal static void ViewRecords(List<RecordWithHabit> records)
     {
         var table = new Table();
         table.AddColumn("Id");
@@ -59,7 +60,7 @@ public static class ContentView
     /// <param name="records">The list of records with habit information.</param>
     /// <param name="habitName">The name of the habit.</param>
     /// <param name="measurementUnit">The measurement unit of the habit.</param>
-    internal static void ViewHabitReport(List<logic.HabitLogger.RecordWithHabit> records, string habitName, string measurementUnit)
+    internal static void ViewHabitReport(List<RecordWithHabit> records, string habitName, string measurementUnit)
     {
         Console.Clear();
         

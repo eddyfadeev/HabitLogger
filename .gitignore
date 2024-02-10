@@ -487,3 +487,5 @@ fabric.properties
 
 .idea/
 .vs
+
+qodana.yaml

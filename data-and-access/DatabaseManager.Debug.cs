@@ -1,6 +1,6 @@
 ﻿// For testing purposes only
 #if DEBUG
-namespace HabitLogger.data_access;
+namespace HabitLogger.data_and_access;
 
 /// Class: DatabaseManager
 /// Description: Provides methods to interact with the database.
@@ -20,15 +20,19 @@ public partial class DatabaseManager
             return;
         }
         
-        string[] habitNames = { "Walking", "Running", "Reading", "Meditating", "Coding", "Chocolate", "Drinking Water", "Glasses of Wine" };
-        string[] measurementUnits = { "Steps", "Meters", "Pages", "Minutes", "Hours", "Grams", "Milliliters", "Milliliters" };
+        string[] habitNames = [
+            "Walking", "Running", "Reading", "Meditating", "Coding", "Chocolate", "Drinking Water", "Glasses of Wine"
+        ];
+        string[] measurementUnits = [
+            "Steps", "Meters", "Pages", "Minutes", "Hours", "Grams", "Milliliters", "Milliliters"
+        ];
         
         string[] dates = GenerateRandomDates(100);
         int[] quantities = GenerateRandomQuantities(100, 1, 2000);
         
         for (int i = 0; i < habitNames.Length; i++)
         {
-            var habitQuery = "INSERT INTO habits (Name, Unit) VALUES (@name, @unit)";
+            const string habitQuery = "INSERT INTO habits (Name, Unit) VALUES (@name, @unit)";
             var habitParameters = new Dictionary<string, object>
             {
                 { "@name", habitNames[i] },
@@ -40,7 +44,7 @@ public partial class DatabaseManager
         
         for (int i = 0; i < 100; i++)
         {
-            var recordQuery = "INSERT INTO records (Date, Quantity, HabitId) VALUES (@date, @quantity, @habitId)";
+            const string recordQuery = "INSERT INTO records (Date, Quantity, HabitId) VALUES (@date, @quantity, @habitId)";
             var recordParameters = new Dictionary<string, object>
             {
                 { "@date", dates[i] },

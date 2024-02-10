@@ -1,32 +1,40 @@
 ﻿using System.Globalization;
-using HabitLogger.data_access;
+using HabitLogger.data_and_access;
+using HabitLogger.enums;
 using HabitLogger.logic.utils;
-using HabitLogger.logic.enums;
 using HabitLogger.view;
 using Spectre.Console;
 
 namespace HabitLogger.logic;
 
 /// <summary>
-/// Represents a logger for tracking habits.
+/// The HabitLogger class manages the logging of habits and records in a habit tracking application.
 /// </summary>
 internal class HabitLogger
 {
     /// <summary>
-    /// Record representing a record with habit.
+    /// Manages the database connection and provides query execution functionality.
     /// </summary>
-    internal sealed record RecordWithHabit(int? Id, DateTime Date, int Quantity, string? HabitName, string? Unit);
+    private readonly DatabaseManager _databaseManager;
+
+    public HabitLogger(string? connectionString)
+    {
+        var s = string.IsNullOrWhiteSpace(connectionString) ? 
+            "Data Source=habit-Tracker.db" : connectionString;
+        
+        _databaseManager = new DatabaseManager(s);
+        
+        _databaseManager.CreateDatabase();
+    }
 
     /// <summary>
-    /// Represents a record for managing habits in the Habit Logger application.
+    /// Adds a new habit to the database.
     /// </summary>
-    internal sealed record Habit(int Id, string Name, string Unit);
-
-    /// <summary>
-    /// Adds a habit to the database.
-    /// </summary>
-    /// <param name="database">The DatabaseManager object used to interact with the database.</param>
-    internal void AddHabit(DatabaseManager database)
+    /// <remarks>
+    /// The method prompts the user to enter the name and unit of measurement for the new habit.
+    /// It then inserts the habit into the database table 'habits'.
+    /// </remarks>
+    internal void AddHabit()
     {
         string? name;
         string? unit;
@@ -49,20 +57,19 @@ internal class HabitLogger
             { "@unit", unit }
         };
             
-        var returnResult = database.ExecuteNonQuery(query, parameters);
+        var returnResult = _databaseManager.ExecuteNonQuery(query, parameters);
             
-        Console.WriteLine(returnResult == -1 ? "Failed to add habit." : "Habit added successfully!");
+        PrintResult("Habit", "add", returnResult);
     }
 
     /// <summary>
     /// Deletes a habit from the database.
     /// </summary>
-    /// <param name="database">The DatabaseManager instance used to execute the delete query.</param>
-    internal void DeleteHabit(DatabaseManager database)
+    internal void DeleteHabit()
     {
         int id;
         
-        GetHabits(database);
+        GetHabits();
 
         try
         {
@@ -79,22 +86,29 @@ internal class HabitLogger
             { "@id", id }
         };
         
-        var returnResult = database.ExecuteNonQuery(query, parameters);
+        var returnResult = _databaseManager.ExecuteNonQuery(query, parameters);
 
-        Console.WriteLine(returnResult == -1 ? "Failed to delete habit." : "Habit deleted successfully!");
+        PrintResult("Habit", "delete", returnResult);
     }
 
     /// <summary>
-    /// Updates a habit in the database based on user input.
+    /// Updates a habit in the habit logger.
     /// </summary>
-    /// <param name="database">The <see cref="DatabaseManager"/> object representing the database connection.</param>
-    internal void UpdateHabit(DatabaseManager database)
+    /// <remarks>
+    /// This method prompts the user to enter the ID of the habit they want to update.
+    /// It then asks the user if they want to update the name and unit of measurement for the habit.
+    /// If the user confirms the update, it prompts the user to enter the new name and unit of measurement.
+    /// The method then constructs a SQL update query for the 'habits' table in the database,
+    /// with the provided parameters and executes the query using the DatabaseManager.
+    /// Finally, it displays a success or failure message to the console.
+    /// </remarks>
+    internal void UpdateHabit()
     {
         bool updateName;
         bool updateUnit;
         var parameters = new Dictionary<string, object>();
         
-        GetHabits(database);
+        GetHabits();
 
         try
         {
@@ -122,26 +136,29 @@ internal class HabitLogger
         
         if (!updateName && !updateUnit)
         {
-            Console.WriteLine("No changes made.");
+            AnsiConsole.WriteLine("No changes made.");
             return;
         }
         
         var query = Utilities.UpdateQueryBuilder("habits", parameters);
         
-        int returnCode = database.ExecuteNonQuery(query, parameters);
+        int returnCode = _databaseManager.ExecuteNonQuery(query, parameters);
         
-        Console.WriteLine(returnCode == -1 ? "Failed to update habit." : "Habit updated successfully!");
+        PrintResult("Habit", "update", returnCode);
     }
 
     /// <summary>
     /// Retrieves a list of habits from the database.
     /// </summary>
-    /// <param name="database">The <see cref="DatabaseManager"/> instance.</param>
-    internal void GetHabits(DatabaseManager database)
+    /// <remarks>
+    /// This method executes a query to select all habits from the "Habits" table in the database.
+    /// It maps the retrieved rows to Habit objects and returns a list of habits.
+    /// </remarks>
+    internal void GetHabits()
     {
         List<Habit> habits = new();
         const string query = "SELECT * FROM Habits";
-        var result = database.ExecuteQuery(query);
+        var result = _databaseManager.ExecuteQuery(query);
 
         if (result != null)
         {
@@ -161,10 +178,9 @@ internal class HabitLogger
     }
 
     /// <summary>
-    /// Adds a record to the database.
+    /// Adds a record for a habit to the database.
     /// </summary>
-    /// <param name="database">The DatabaseManager instance.</param>
-    internal void AddRecord(DatabaseManager database)
+    internal void AddRecord()
     {
         int habitId;
         int quantity;
@@ -173,7 +189,7 @@ internal class HabitLogger
         try {
             date = Utilities.ValidateDate("Enter the date of the record (yyyy-MM-dd):");
         
-            GetHabits(database);
+            GetHabits();
 
             habitId = Utilities.ValidateNumber("Enter the ID of the habit:");
             quantity =
@@ -191,19 +207,23 @@ internal class HabitLogger
             { "@habitId", habitId }
         };
             
-        int returnResult = database.ExecuteNonQuery(query, parameters);
+        int returnResult = _databaseManager.ExecuteNonQuery(query, parameters);
 
-        Console.WriteLine(returnResult == -1 ? "Failed to add record." : "Record added successfully!");
+        PrintResult("Record", "add", returnResult);
     }
 
     /// <summary>
     /// Deletes a record from the database.
     /// </summary>
-    /// <param name="database">The <see cref="DatabaseManager"/> object for database operations.</param>
-    internal void DeleteRecord(DatabaseManager database)
+    /// <remarks>
+    /// This method prompts the user to enter the ID of the record to be deleted.
+    /// It then executes a DELETE query on the 'records' table of the database, using the provided ID as a parameter.
+    /// If the deletion is successful, it displays a success message. Otherwise, it displays a failure message.
+    /// </remarks>
+    internal void DeleteRecord()
     {
         int id;
-        GetRecords(database);
+        GetRecords();
 
         try
         {
@@ -220,22 +240,21 @@ internal class HabitLogger
             { "@id", id }
         };
             
-        int returnResult = database.ExecuteNonQuery(query, parameters);
+        int returnResult = _databaseManager.ExecuteNonQuery(query, parameters);
 
-        Console.WriteLine(returnResult == -1 ? "Failed to delete record." : "Record deleted successfully!");
+        PrintResult("Record", "delete", returnResult);
     }
 
     /// <summary>
-    /// Updates a record in the database based on the provided ID.
+    /// Updates a record in the database.
     /// </summary>
-    /// <param name="database">The instance of the DatabaseManager class used to execute the update query.</param>
-    internal void UpdateRecord(DatabaseManager database)
+    internal void UpdateRecord()
     {
         bool updateDate;
         bool updateRecord;
         var parameters = new Dictionary<string, object>();
 
-        GetRecords(database);
+        GetRecords();
         try
         {
             var id = Utilities.ValidateNumber("Please type the id of the record you want to delete.");
@@ -263,22 +282,26 @@ internal class HabitLogger
 
         if (!updateDate && !updateRecord)
         {
-            Console.WriteLine("No changes made.");
+            AnsiConsole.WriteLine("No changes made.");
             return;
         }
 
         var query = Utilities.UpdateQueryBuilder("records", parameters);
         
-        int returnCode = database.ExecuteNonQuery(query, parameters);
+        int returnCode = _databaseManager.ExecuteNonQuery(query, parameters);
 
-        Console.WriteLine(returnCode == -1 ? "Failed to update record." : "Record updated successfully!");
+        PrintResult("Record", "update", returnCode);
     }
 
     /// <summary>
-    /// Retrieves the list of records with habit information from the database.
+    /// Retrieves the records from the database and displays them in the view.
     /// </summary>
-    /// <param name="database">The instance of the <see cref="DatabaseManager"/> class used for database operations.</param>
-    internal void GetRecords(DatabaseManager database)
+    /// <remarks>
+    /// This method fetches the records from the 'records' table in the database and joins them with the 'habits' table
+    /// to get additional information about the associated habit.
+    /// The retrieved records are then displayed using the ContentView.ViewRecords method.
+    /// </remarks>
+    internal void GetRecords()
     {
         List<RecordWithHabit> records = new();
         const string query = """
@@ -289,7 +312,7 @@ internal class HabitLogger
                                     INNER JOIN habits ON records.HabitId = habits.Id
                              """;
 
-        var result = database.ExecuteQuery(query);
+        var result = _databaseManager.ExecuteQuery(query);
 
         if (result != null)
         {
@@ -299,22 +322,20 @@ internal class HabitLogger
         ContentView.ViewRecords(records);
     }
 
-    internal void GenerateHabitReport(DatabaseManager database, ReportType reportType, int id)
+    /// <summary>
+    /// Generates a habit report based on the specified report type and habit ID.
+    /// </summary>
+    /// <param name="reportType">The type of report to generate.</param>
+    /// <param name="id">The ID of the habit.</param>
+    internal void GenerateHabitReport(ReportType reportType, int id)
     {
-        var parameters = new Dictionary<string, object>();
-        var (habitName, measurementUnit) = GetSupportInfo(database, id);
-        var query = "";
+        var (habitName, measurementUnit) = GetSupportInfo(id);
 
-        try
-        {
-            (query, parameters) = Utilities.CreateReportQuery(reportType, id);
-        } 
-        catch (Utilities.ExitToMainException)
-        {
-            return;
-        }
+        var (query, parameters) = Utilities.CreateReportQuery(reportType, id);
 
-        var result = database.ExecuteQuery(query, parameters);
+        var result = _databaseManager.ExecuteQuery(
+            query ?? string.Empty, parameters ?? new Dictionary<string, object>()
+            );
         
         if (result != null)
         {
@@ -324,11 +345,16 @@ internal class HabitLogger
         }
         else
         {
-            Console.WriteLine("No records found.");
+            AnsiConsole.WriteLine("No records found.");
         }
     }
 
-    private (string habitName, string mesurementUnits) GetSupportInfo(DatabaseManager database, int id)
+    /// <summary>
+    /// Retrieves the support information for a given habit.
+    /// </summary>
+    /// <param name="id">The ID of the habit.</param>
+    /// <returns>A tuple containing the habit name and measurement units.</returns>
+    private (string habitName, string mesurementUnits) GetSupportInfo(int id)
     {
         const string query = "SELECT Name, Unit FROM habits WHERE Id = @id";
         
@@ -337,11 +363,16 @@ internal class HabitLogger
             { "@id", id }
         };
         
-        var result = database.ExecuteQuery(query, parameters);
+        var result = _databaseManager.ExecuteQuery(query, parameters);
         
         return (result![0]["Name"].ToString(), result[0]["Unit"].ToString())!;
     }
-    
+
+    /// <summary>
+    /// Creates a list of records with habits from a result set.
+    /// </summary>
+    /// <param name="result">The result set containing the records with habits.</param>
+    /// <returns>A list of records with habits.</returns>
     private List<RecordWithHabit> CreateRecordWithHabitList(List<Dictionary<string, object>> result)
     {
         var records = new List<RecordWithHabit>();
@@ -364,5 +395,27 @@ internal class HabitLogger
         }
 
         return records;
+    }
+
+    /// <summary>
+    /// Prints the result of an action performed on a habit or record.
+    /// </summary>
+    /// <param name="type">The type of the object (Habit or Record).</param>
+    /// <param name="action">The action performed (add, delete, or update).</param>
+    /// <param name="returnResult">The return code indicating the result of the action.</param>
+    private void PrintResult(string type, string action, int returnResult)
+    {
+        switch (returnResult)
+        {
+            case -1:
+                AnsiConsole.WriteLine($"Failed to {action} {type.ToLower()}.");
+                break;
+            case 0:
+                AnsiConsole.WriteLine($"{type} not found.");
+                break;
+            default:
+                AnsiConsole.WriteLine($"{type} deleted successfully!");
+                break;
+        }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Microsoft.Data.Sqlite;
 
-namespace HabitLogger.data_access;
+namespace HabitLogger.data_and_access;
 
 /// <summary>
-/// The <see cref="DatabaseManager"/> class provides methods to interact with a database.
+/// The <see cref="data_and_access.DatabaseManager"/> class provides methods to interact with a database.
 /// </summary>
 public partial class DatabaseManager
 {
@@ -52,32 +52,7 @@ public partial class DatabaseManager
     /// <returns>The number of rows affected by the execution of the SQL statement.</returns>
     public int ExecuteNonQuery(string query)
     {
-        using var connection = OpenConnection();
-        using var transaction = connection.BeginTransaction();
-        using var command = CreateCommand(query, connection, null);
-        command.Transaction = transaction;
-
-        try
-        {
-            int affectedRows = command.ExecuteNonQuery();
-            transaction.Commit();
-            
-            return affectedRows;
-        }
-        catch (SqliteException sqlEx)
-        {
-            ErrorMessagePrinter(sqlEx, transaction);
-            return -1;
-        }
-        catch (Exception e)
-        {
-            ErrorMessagePrinter(e, transaction);
-            return -1;
-        }
-        finally
-        {
-            CloseConnection(connection);
-        }
+        return ExecuteNonQuery(query, new Dictionary<string, object>());
     }
 
     /// <summary>
@@ -141,43 +116,7 @@ public partial class DatabaseManager
     /// <returns>A list of dictionaries representing the result set.</returns>
     public List<Dictionary<string, object>>? ExecuteQuery(string query)
     {
-        var results = new List<Dictionary<string, object>>();
-        using var connection = OpenConnection();
-        
-        try
-        {
-            using var command = CreateCommand(query, connection, null);
-
-            using var reader = command.ExecuteReader();
-
-            while (reader.Read())
-            {
-                var row = new Dictionary<string, object>();
-
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    row[reader.GetName(i)] = (reader.IsDBNull(i) ? null : reader.GetValue(i)) ?? "NIL";
-                }
-
-                results.Add(row);
-            }
-        }
-        catch (SqliteException sqlEx)
-        {
-            ErrorMessagePrinter(sqlEx);
-            return null;
-        }
-        catch (Exception e)
-        {
-            ErrorMessagePrinter(e);
-            return null;
-        }
-        finally
-        {
-            CloseConnection(connection);
-        }
-        
-        return results;
+        return ExecuteQuery(query, new Dictionary<string, object>());
     }
 
     /// <summary>
@@ -224,27 +163,6 @@ public partial class DatabaseManager
 
     public object? ExecuteScalar(string query)
     {
-        using var connection = OpenConnection();
-        
-        try
-        {
-            using var command = CreateCommand(query, connection, null);
-            
-            return command.ExecuteScalar();
-        }
-        catch (SqliteException sqlEx)
-        {
-            ErrorMessagePrinter(sqlEx);
-            return null;
-        }
-        catch (Exception e)
-        {
-            ErrorMessagePrinter(e);
-            return null;
-        }
-        finally
-        {
-            CloseConnection(connection);
-        }
+        return ExecuteScalar(query, new Dictionary<string, object>());
     }
 }
