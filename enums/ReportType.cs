@@ -1,4 +1,4 @@
-﻿namespace HabitLogger.logic.enums;
+﻿namespace HabitLogger.enums;
 
 public enum ReportType
 {
@@ -8,4 +8,5 @@ public enum ReportType
     YearToDate,
     TotalForYear,
     Total,
+    ReturnToMainMenu
 }

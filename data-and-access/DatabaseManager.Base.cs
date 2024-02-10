@@ -1,4 +1,4 @@
-﻿namespace HabitLogger.data_access;
+﻿namespace HabitLogger.data_and_access;
 
 /// <summary>
 /// Class for managing database operations.

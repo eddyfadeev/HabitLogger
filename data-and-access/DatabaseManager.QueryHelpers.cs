@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 
-namespace HabitLogger.data_access;
+namespace HabitLogger.data_and_access;
 
 /// <summary>
 /// The <see cref="DatabaseManager"/> class provides methods to interact with a database.

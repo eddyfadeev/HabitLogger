@@ -1,45 +1,47 @@
 ﻿using System.Globalization;
 using System.Text;
-using HabitLogger.logic.enums;
+using HabitLogger.enums;
 using Spectre.Console;
 
 namespace HabitLogger.logic.utils;
 
 /// <summary>
-/// A collection of utility methods for various functionalities.
+/// The Utilities class provides utility methods for various operations.
 /// </summary>
 internal static class Utilities
 {
     #region Inner Classes and Records
+
     /// <summary>
-    /// Represents an exception used to exit to the main menu.
+    /// The <see cref="ExitToMainException"/> class represents an exception that is thrown when an operation needs to exit to the main menu.
     /// </summary>
     public sealed class ExitToMainException(string message = "Exiting to main menu.") : Exception(message);
 
     /// <summary>
-    /// Represents an exception that is thrown when the application should exit.
+    /// Represents an exception that is thrown when the application needs to exit.
     /// </summary>
     public sealed class ExitFromAppException(string message = "Exiting the application.") : Exception(message);
 
     /// <summary>
-    /// The ReportInputData class represents the input data for generating a report.
+    /// Represents the input data for generating a report.
     /// </summary>
-    internal sealed record ReportInputData(
+    private sealed record ReportInputData(
         ReportType ReportType, int Id,
         string? Date = null, string? StartDate = null, string? EndDate = null, int? Month = null, int? Year = null
     );
     #endregion
 
     #region Methods
+
     /// <summary>
-    /// Validates the input as a positive number.
+    /// Validates a number input from the user.
     /// </summary>
-    /// <param name="message">The message displayed to the user to enter a positive number. Defaults to "Enter a positive number:".</param>
-    /// <param name="maximum">The maximum allowed value for the number. Defaults to int.MaxValue.</param>
-    /// <param name="minimum">The minimum allowed value for the number. Defaults to 0.</param>
-    /// <returns>The validated positive number.</returns>
-    internal static int ValidateNumber(string message = "Enter a positive number:", int maximum = int.MaxValue,
-        int minumum = 0)
+    /// <param name="message">The message to display to the user.</param>
+    /// <param name="maximum">The maximum valid number.</param>
+    /// <param name="minimum">The minimum valid number.</param>
+    /// <returns>The validated number input from the user.</returns>
+    internal static int ValidateNumber(string message = "Enter a positive number:", 
+                                        int maximum = int.MaxValue, int minimum = 0)
     {
         int output;
         bool isValid;
@@ -62,7 +64,7 @@ internal static class Utilities
                 throw;
             }
 
-            isValid = int.TryParse(numberInput, out output) && output >= minumum && output <= maximum;
+            isValid = int.TryParse(numberInput, out output) && output >= minimum && output <= maximum;
 
             if (!isValid)
             {
@@ -75,10 +77,10 @@ internal static class Utilities
     }
 
     /// <summary>
-    /// Validates a given date input string in the format "dd-MM-yyyy".
+    /// Validates a date inputted by the user. prompts user to enter a date in the past in the format "yyyy-MM-dd", will keep asking until a valid date is entered.
     /// </summary>
-    /// <param name="message">The message to display when prompting for date input.</param>
-    /// <returns>The validated date string in the format "dd-MM-yyyy".</returns>
+    /// <param name="message">The message to display to the user asking for the date.</param>
+    /// <returns>A string representation of the validated date in the format "yyyy-MM-dd".</returns>
     internal static string ValidateDate(string message = "Enter the date (yyyy-MM-dd):")
     {
         DateTime dateValue;
@@ -120,12 +122,12 @@ internal static class Utilities
     /// Validates the user input for text fields.
     /// </summary>
     /// <param name="str">The name of the text field.</param>
-    /// <returns>The validated user input as a string.</returns>
+    /// <returns>The validated user input.</returns>
     internal static string ValidateTextInput(string str)
     {
         try
         {
-            string input = AnsiConsole.Ask<string>($"Enter the {str}:");
+            var input = AnsiConsole.Ask<string>($"Enter the {str}:");
 
             while (string.IsNullOrWhiteSpace(input))
             {
@@ -143,21 +145,21 @@ internal static class Utilities
     }
 
     /// <summary>
-    /// Builds an update query for a given database table with the specified parameters.
+    /// Constructs an SQL UPDATE query for a given database table.
     /// </summary>
     /// <param name="databaseName">The name of the database table to update.</param>
-    /// <param name="parameters">A dictionary of parameters to update.</param>
-    /// <returns>The update query string.</returns>
+    /// <param name="parameters">A dictionary containing the column names and their corresponding values to update.</param>
+    /// <returns>The constructed SQL UPDATE query.</returns>
     internal static string UpdateQueryBuilder(string databaseName, Dictionary<string, object> parameters)
     {
         StringBuilder query = new();
-        List<string> keysList = new List<string>(parameters.Keys).Except(new List<string> { "@id", "@Id" }).ToList();
+        var keysList = new List<string>(parameters.Keys).Except(new List<string> { "@id", "@Id" }).ToList();
 
         query.Append($"UPDATE {databaseName} SET");
 
         foreach (var key in keysList)
         {
-            query.Append($" {key.Substring(1, 1).ToUpper() + key.Substring(2)} = {key},");
+            query.Append($" {string.Concat(key.Substring(1, 1).ToUpper(), key.AsSpan(2))} = {key},");
         }
         
         query.Remove(query.Length - 1, 1);
@@ -167,14 +169,10 @@ internal static class Utilities
     }
 
     /// <summary>
-    /// Builds a SQL query for generating different types of reports based on provided input data.
+    /// Builds a query to retrieve records based on specified criteria.
     /// </summary>
-    /// <param name="reportData">
-    /// An object containing the input data for generating the report.
-    /// </param>
-    /// <returns>
-    /// A string representing the SQL query for generating the report.
-    /// </returns>
+    /// <param name="reportData">The input data for building the query.</param>
+    /// <returns>A string representing the generated SQL query.</returns>
     private static string ReportQueryBuilder(ReportInputData reportData)
     {
         StringBuilder query = new();
@@ -197,6 +195,7 @@ internal static class Utilities
                 query.Append(reportData.ReportType == ReportType.YearToDate ? " AND Date <= @date AND" : " AND");
                 break;
             case ReportType.Total:
+            case ReportType.ReturnToMainMenu:
                 break;
             default:
                 Console.WriteLine("Problem with query builder occured (query section).");
@@ -209,10 +208,12 @@ internal static class Utilities
     }
 
     /// <summary>
-    /// Builds the query parameters for generating a report based on the given input data.
+    /// Builds the dictionary of query parameters based on the report data.
     /// </summary>
-    /// <param name="reportData">The input data for generating the report.</param>
-    /// <returns>A dictionary containing the query parameters for generating the report.</returns>
+    /// <param name="reportData">The report input data containing the report type, id, and optional date filters.</param>
+    /// <returns>
+    /// The dictionary of query parameters where the keys are the parameter names and the values are the parameter values.
+    /// </returns>
     private static Dictionary<string, object> ReportQueryParametersBuilder(ReportInputData reportData)
     {
         Dictionary<string, object> parameters = new();
@@ -238,6 +239,7 @@ internal static class Utilities
                 parameters.Add("@year", (reportData.Year ?? DateTime.Now.Year).ToString());
                 break;
             case ReportType.Total:
+            case ReportType.ReturnToMainMenu:
                 break;
             default:
                 Console.WriteLine("Problem with query builder occured (Parameters section).");
@@ -255,31 +257,30 @@ internal static class Utilities
     /// <param name="reportType">The type of report to create.</param>
     /// <param name="id">The ID of the report.</param>
     /// <returns>
-    /// A tuple containing the generated query string and parameter dictionary.
+    /// A tuple containing the generated query and parameters in the form:
+    /// Item1 (string): The generated query.
+    /// Item2 (Dictionary&lt;string, object&gt;): The query parameters.
     /// </returns>
     internal static (string? query, Dictionary<string, object>? parameters)
         CreateReportQuery(ReportType reportType, int id)
     {
         ReportInputData reportInputData;
-        var query = "";
-        var parameters = new Dictionary<string, object>();
-        string date;
-        string startDate;
+        string? query;
+        Dictionary<string, object>? parameters;
         string endDate;
-        int month;
         int year;
             
         switch (reportType)
         {
             case ReportType.DateToToday:
-                date = ValidateDate("Enter the start date (yyyy-MM-dd):");
+                var date = ValidateDate("Enter the start date (yyyy-MM-dd):");
                 reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: date);
 
                 query = ReportQueryBuilder(reportInputData);
                 parameters = ReportQueryParametersBuilder(reportInputData);
                 break;
             case ReportType.DateToDate:
-                startDate = ValidateDate("Enter the start date (yyyy-MM-dd):");
+                var startDate = ValidateDate("Enter the start date (yyyy-MM-dd):");
                 endDate = ValidateDate("Enter the end date (yyyy-MM-dd):");
                 reportInputData = new ReportInputData(ReportType: reportType, Id: id, StartDate: startDate,
                     EndDate: endDate);
@@ -288,8 +289,8 @@ internal static class Utilities
                 parameters = ReportQueryParametersBuilder(reportInputData);
                 break;
             case ReportType.TotalForMonth:
-                month = ValidateNumber("Enter the month (1-12):", maximum: 12);
-                year = ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                var month = ValidateNumber("Enter the month (1-12):", maximum: 12);
+                year = ValidateNumber("Enter the year (yyyy):", minimum: DateTime.Now.Year - 1,
                     maximum: DateTime.Now.Year);
                 reportInputData = new ReportInputData(ReportType: reportType, Id: id, Month: month, Year: year);
 
@@ -297,7 +298,7 @@ internal static class Utilities
                 parameters = ReportQueryParametersBuilder(reportInputData);
                 break;
             case ReportType.YearToDate:
-                year = ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                year = ValidateNumber("Enter the year (yyyy):", minimum: DateTime.Now.Year - 1,
                     maximum: DateTime.Now.Year);
                 endDate = ValidateDate("Enter the end date (yyyy-MM-dd):");
                 reportInputData = new ReportInputData(ReportType: reportType, Id: id, Date: endDate, Year: year);
@@ -306,7 +307,7 @@ internal static class Utilities
                 parameters = ReportQueryParametersBuilder(reportInputData);
                 break;
             case ReportType.TotalForYear:
-                year = Utilities.ValidateNumber("Enter the year (yyyy):", minumum: DateTime.Now.Year - 1,
+                year = ValidateNumber("Enter the year (yyyy):", minimum: DateTime.Now.Year - 1,
                     maximum: DateTime.Now.Year);
                 reportInputData = new ReportInputData(ReportType: reportType, Id: id, Year: year);
 
@@ -331,9 +332,9 @@ internal static class Utilities
     }
 
     /// <summary>
-    /// Checks if the input string is equal to "0" and throws an ExitToMainException if true.
+    /// Checks if the input string is equal to "0" and throws an exception if it is.
     /// </summary>
-    /// <param name="input">The input string to be checked.</param>
+    /// <param name="input">The input string to check.</param>
     private static void CheckForZero(string input)
     {
         if (input.Equals("0"))
@@ -343,9 +344,9 @@ internal static class Utilities
     }
 
     /// <summary>
-    /// Saves the content of a table to a CSV file.
+    /// Saves the provided table as a CSV file.
     /// </summary>
-    /// <param name="table">The table holding the content to be saved.</param>
+    /// <param name="table">The table to be saved.</param>
     internal static void SaveReportToFile(Table table)
     {
         var reportName = table.Title?.Text;
@@ -355,18 +356,25 @@ internal static class Utilities
         
         var console = AnsiConsole.Create(new AnsiConsoleSettings
         {
-            Out = new AnsiConsoleOutput(textWriter),
+            Out = new AnsiConsoleOutput(textWriter)
         });
         
         console.Write(table);
         console.WriteLine($"{reportName}\n");
         console.WriteLine($"Generated on {DateTime.Now:f}");
+
+        var actualTime = DateTime.Now
+                                .ToString("HH:mm:ss")
+                                .Split(":")
+                                .Aggregate((x, y) => x + "-" + y);
         
-        File.WriteAllText($"report-{DateTime.Now.Date:yyyy-MM-dd}.csv", textWriter.ToString());
+        File.WriteAllText($"report-{DateTime.Now.Date:yyyy-MM-dd}-{actualTime}.csv", textWriter.ToString());
 
         AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings());
         
         AnsiConsole.WriteLine("Save complete.");
+        AnsiConsole.WriteLine("Press any key to continue...");
+        Console.ReadKey();
     }
     #endregion
 }

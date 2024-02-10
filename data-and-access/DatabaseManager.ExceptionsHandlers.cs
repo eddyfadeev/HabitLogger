@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 
-namespace HabitLogger.data_access;
+namespace HabitLogger.data_and_access;
 
 /// <summary>
 /// Represents a database manager for handling database operations.
